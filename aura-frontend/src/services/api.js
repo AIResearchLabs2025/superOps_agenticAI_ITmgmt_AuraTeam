@@ -1,16 +1,56 @@
 import axios from 'axios';
+import config, { discoverApiEndpoint, startHealthMonitor } from '../config/environment';
 
-// API Configuration - Use API Gateway as primary endpoint
-const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000';
+// API Configuration - Use dynamic configuration
+const API_BASE_URL = config.API_BASE_URL;
 
-// Create axios instance with default configuration
+// Initialize health monitoring for AWS environments
+if (config.ENVIRONMENT !== 'development') {
+  startHealthMonitor();
+}
+
+// Create axios instance with dynamic configuration
 const api = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: config.API_TIMEOUT,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// Dynamic baseURL updater for AWS environments
+let currentBaseURL = API_BASE_URL;
+
+const updateBaseURL = (newBaseURL) => {
+  if (newBaseURL !== currentBaseURL) {
+    currentBaseURL = newBaseURL;
+    api.defaults.baseURL = newBaseURL;
+    console.log(`🔄 API base URL updated to: ${newBaseURL}`);
+  }
+};
+
+// Retry mechanism for failed requests
+const retryRequest = async (originalRequest, retryCount = 0) => {
+  if (retryCount >= config.MAX_RETRIES) {
+    throw new Error(`Max retries (${config.MAX_RETRIES}) exceeded`);
+  }
+
+  // Wait before retry
+  await new Promise(resolve => setTimeout(resolve, config.RETRY_DELAY * (retryCount + 1)));
+
+  // Attempt to rediscover API endpoint on network errors
+  if (retryCount === 0) {
+    try {
+      const newBaseURL = await discoverApiEndpoint();
+      updateBaseURL(newBaseURL);
+      originalRequest.baseURL = newBaseURL;
+    } catch (error) {
+      console.warn('Failed to rediscover API endpoint:', error.message);
+    }
+  }
+
+  return api(originalRequest);
+};
 
 // Request interceptor for adding auth headers if needed
 api.interceptors.request.use(
@@ -27,17 +67,31 @@ api.interceptors.request.use(
   }
 );
 
-// Response interceptor for handling errors
+// Response interceptor for handling errors with retry logic
 api.interceptors.response.use(
   (response) => {
     return response;
   },
-  (error) => {
+  async (error) => {
+    const originalRequest = error.config;
+
     // Handle common errors
     if (error.response?.status === 401) {
       // Unauthorized - redirect to login
       localStorage.removeItem('authToken');
       // window.location.href = '/login';
+    }
+
+    // Handle network errors with retry logic for AWS environments
+    if (!error.response && !originalRequest._retry && config.ENVIRONMENT !== 'development') {
+      originalRequest._retry = true;
+      
+      try {
+        console.log('🔄 Network error detected, attempting retry with endpoint discovery...');
+        return await retryRequest(originalRequest, originalRequest._retryCount || 0);
+      } catch (retryError) {
+        console.error('❌ All retry attempts failed:', retryError.message);
+      }
     }
     
     // Return a more user-friendly error
@@ -171,6 +225,28 @@ export const knowledgeBaseAPI = {
   // Generate article suggestions
   generateSuggestions: async (ticketData) => {
     const response = await api.post('/api/v1/kb/generate-suggestions', ticketData);
+    return response.data;
+  },
+
+  // Get KB suggestions from AI analysis
+  getSuggestions: async () => {
+    const response = await api.get('/api/v1/kb/suggestions');
+    return response.data;
+  },
+
+  // Update KB suggestion status
+  updateSuggestionStatus: async (suggestionId, action, feedback = '', editedContent = '') => {
+    const response = await api.post(`/api/v1/kb/suggestions/${suggestionId}/action`, {
+      action,
+      feedback,
+      edited_content: editedContent,
+    });
+    return response.data;
+  },
+
+  // Get KB suggestions analytics
+  getSuggestionsAnalytics: async () => {
+    const response = await api.get('/api/v1/kb/suggestions/analytics');
     return response.data;
   },
 };
@@ -316,14 +392,24 @@ export const mockData = {
 };
 
 // Development mode helpers
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = config.ENVIRONMENT === 'development' || config.ENABLE_MOCK_DATA;
 
-// Wrapper functions that use mock data in development when API fails
+// Enhanced wrapper functions with AWS-specific error handling
 export const apiWithFallback = {
   getTickets: async (params) => {
     try {
       return await serviceDeskAPI.getTickets(params);
     } catch (error) {
+      // Log error details for AWS debugging
+      if (config.ENABLE_DEBUG_LOGS) {
+        console.error('API Error Details:', {
+          message: error.message,
+          status: error.status,
+          baseURL: currentBaseURL,
+          environment: config.ENVIRONMENT
+        });
+      }
+
       if (isDevelopment) {
         console.warn('API call failed, using mock data:', error.message);
         return { tickets: mockData.tickets, total: mockData.tickets.length };
@@ -336,6 +422,16 @@ export const apiWithFallback = {
     try {
       return await serviceDeskAPI.getTicket(ticketId);
     } catch (error) {
+      // Enhanced error logging for AWS debugging
+      if (config.ENABLE_DEBUG_LOGS) {
+        console.error('Get Ticket Error:', {
+          ticketId,
+          message: error.message,
+          status: error.status,
+          baseURL: currentBaseURL
+        });
+      }
+
       if (isDevelopment) {
         console.warn('API call failed, using mock data:', error.message);
         const mockTicket = mockData.tickets.find(t => t.id.toString() === ticketId.toString());
@@ -369,10 +465,26 @@ export const apiWithFallback = {
 
   getArticles: async (params) => {
     try {
-      return await knowledgeBaseAPI.getArticles(params);
+      const response = await knowledgeBaseAPI.getArticles(params);
+      // The API returns 'items' but frontend expects 'articles'
+      return { 
+        articles: response.items || response.articles || [], 
+        total: response.total || 0 
+      };
     } catch (error) {
+      // Enhanced error logging for knowledge base issues
+      if (config.ENABLE_DEBUG_LOGS) {
+        console.error('Knowledge Base API Error:', {
+          params,
+          message: error.message,
+          status: error.status,
+          baseURL: currentBaseURL,
+          endpoint: '/api/v1/kb/articles'
+        });
+      }
+
       if (isDevelopment) {
-        console.warn('API call failed, using mock data:', error.message);
+        console.warn('Knowledge Base API call failed, using mock data:', error.message);
         return { articles: mockData.articles, total: mockData.articles.length };
       }
       throw error;
@@ -386,6 +498,67 @@ export const apiWithFallback = {
       if (isDevelopment) {
         console.warn('API call failed, using mock data:', error.message);
         return mockData.dashboardStats;
+      }
+      throw error;
+    }
+  },
+
+  getDashboardMetrics: async (timeRange = '7d') => {
+    try {
+      return await dashboardAPI.getTicketMetrics(timeRange);
+    } catch (error) {
+      if (isDevelopment) {
+        console.warn('API call failed, using mock metrics data:', error.message);
+        return {
+          statusDistribution: {
+            open: 18,
+            in_progress: 15,
+            resolved: 12,
+            closed: 5
+          },
+          categoryDistribution: {
+            Software: 15,
+            Hardware: 12,
+            Network: 10,
+            Email: 8,
+            Access: 3,
+            Other: 2
+          },
+          priorityDistribution: {
+            critical: 3,
+            high: 12,
+            medium: 25,
+            low: 10
+          },
+          trendData: {
+            labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+            created: [8, 12, 15, 10, 14, 6, 4],
+            resolved: [6, 10, 12, 13, 16, 8, 5]
+          }
+        };
+      }
+      throw error;
+    }
+  },
+
+  getAgentPerformance: async () => {
+    try {
+      return await dashboardAPI.getAgentPerformance();
+    } catch (error) {
+      if (isDevelopment) {
+        console.warn('API call failed, using mock agent data:', error.message);
+        return {
+          agents: [
+            { name: 'Sarah Wilson', assigned: 8, resolved: 12, avg_time: '2.1h', status: 'available' },
+            { name: 'Mike Chen', assigned: 6, resolved: 15, avg_time: '1.8h', status: 'busy' },
+            { name: 'Emma Rodriguez', assigned: 4, resolved: 8, avg_time: '3.2h', status: 'available' },
+            { name: 'David Kim', assigned: 7, resolved: 11, avg_time: '2.5h', status: 'available' },
+            { name: 'Lisa Anderson', assigned: 5, resolved: 9, avg_time: '2.8h', status: 'busy' }
+          ],
+          totalAgents: 5,
+          activeAgents: 3,
+          avgWorkload: 75
+        };
       }
       throw error;
     }

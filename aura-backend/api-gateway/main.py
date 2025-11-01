@@ -31,8 +31,6 @@ logger = logging.getLogger(__name__)
 # Service URLs from environment
 SERVICE_URLS = {
     "service-desk": os.getenv("SERVICE_DESK_URL", "http://localhost:8001"),
-    "infra-talent": os.getenv("INFRA_TALENT_URL", "http://localhost:8002"),
-    "threat-intel": os.getenv("THREAT_INTEL_URL", "http://localhost:8003"),
 }
 
 
@@ -260,49 +258,23 @@ async def service_desk_chatbot(request: Request, path: str):
         request.method
     )
 
-
-# Infrastructure & Talent Routes
-@app.api_route("/api/v1/infrastructure/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def infra_talent_infrastructure(request: Request, path: str):
-    """Proxy to Infrastructure & Talent - Infrastructure API"""
+@app.api_route("/api/v1/dashboard", methods=["GET"])
+async def service_desk_dashboard_root(request: Request):
+    """Proxy to Service Desk - Dashboard API (root)"""
     return await proxy_request(
         request,
-        SERVICE_URLS["infra-talent"],
-        f"/api/v1/infrastructure/{path}",
+        SERVICE_URLS["service-desk"],
+        "/api/v1/dashboard",
         request.method
     )
 
-
-@app.api_route("/api/v1/agents/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def infra_talent_agents(request: Request, path: str):
-    """Proxy to Infrastructure & Talent - Agents API"""
+@app.api_route("/api/v1/dashboard/{path:path}", methods=["GET"])
+async def service_desk_dashboard_with_path(request: Request, path: str):
+    """Proxy to Service Desk - Dashboard API (with path)"""
     return await proxy_request(
         request,
-        SERVICE_URLS["infra-talent"],
-        f"/api/v1/agents/{path}",
-        request.method
-    )
-
-
-@app.api_route("/api/v1/analytics/{path:path}", methods=["GET"])
-async def infra_talent_analytics(request: Request, path: str):
-    """Proxy to Infrastructure & Talent - Analytics API"""
-    return await proxy_request(
-        request,
-        SERVICE_URLS["infra-talent"],
-        f"/api/v1/analytics/{path}",
-        request.method
-    )
-
-
-# Threat Intelligence Routes
-@app.api_route("/api/v1/security/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
-async def threat_intel_security(request: Request, path: str):
-    """Proxy to Threat Intelligence - Security API"""
-    return await proxy_request(
-        request,
-        SERVICE_URLS["threat-intel"],
-        f"/api/v1/security/{path}",
+        SERVICE_URLS["service-desk"],
+        f"/api/v1/dashboard/{path}",
         request.method
     )
 

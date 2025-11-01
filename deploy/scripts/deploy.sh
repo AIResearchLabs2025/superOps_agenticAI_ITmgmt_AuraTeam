@@ -259,7 +259,7 @@ build_and_push_images() {
         # Set API URL for production build
         export REACT_APP_API_BASE_URL="http://127.0.0.1:8000"
         
-        docker build -t aura-frontend aura-frontend/
+        docker build --platform linux/amd64 -t aura-frontend aura-frontend/
         docker tag aura-frontend:latest "$ecr_uri/aura-frontend:latest"
         docker push "$ecr_uri/aura-frontend:latest"
         
@@ -268,19 +268,19 @@ build_and_push_images() {
         # Backend or fullstack deployment
         # Build and push API Gateway
         print_status "Building API Gateway image..."
-        docker build -f aura-backend/api-gateway/Dockerfile -t aura-api-gateway aura-backend/
+        docker build --platform linux/amd64 -f aura-backend/api-gateway/Dockerfile -t aura-api-gateway aura-backend/
         docker tag aura-api-gateway:latest "$ecr_uri/aura-api-gateway:latest"
         docker push "$ecr_uri/aura-api-gateway:latest"
         
         # Build and push Service Desk Host
         print_status "Building Service Desk Host image..."
-        docker build -f aura-backend/service-desk-host/Dockerfile -t aura-service-desk-host aura-backend/
+        docker build --platform linux/amd64 -f aura-backend/service-desk-host/Dockerfile -t aura-service-desk-host aura-backend/
         docker tag aura-service-desk-host:latest "$ecr_uri/aura-service-desk-host:latest"
         docker push "$ecr_uri/aura-service-desk-host:latest"
         
         # Build and push Multi-Database
         print_status "Building Multi-Database image..."
-        docker build -t aura-databases deploy/containers/multi-database/
+        docker build --platform linux/amd64 -t aura-databases deploy/containers/multi-database/
         docker tag aura-databases:latest "$ecr_uri/aura-databases:latest"
         docker push "$ecr_uri/aura-databases:latest"
         
@@ -291,7 +291,7 @@ build_and_push_images() {
             # Set API URL for production build
             export REACT_APP_API_BASE_URL="http://127.0.0.1:8000"
             
-            docker build -t aura-frontend aura-frontend/
+            docker build --platform linux/amd64 -t aura-frontend aura-frontend/
             docker tag aura-frontend:latest "$ecr_uri/aura-frontend:latest"
             docker push "$ecr_uri/aura-frontend:latest"
             

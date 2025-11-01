@@ -59,13 +59,20 @@ const Dashboard = () => {
   
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
+  const [metrics, setMetrics] = useState(null);
   const [refreshing, setRefreshing] = useState(false);
 
   // Load dashboard data
   const loadDashboardData = async () => {
     try {
-      const data = await apiWithFallback.getDashboardStats();
-      setStats(data);
+      // Load overview stats and metrics in parallel
+      const [overviewData, metricsData] = await Promise.all([
+        apiWithFallback.getDashboardStats(),
+        apiWithFallback.getDashboardMetrics()
+      ]);
+      
+      setStats(overviewData);
+      setMetrics(metricsData);
     } catch (error) {
       enqueueSnackbar('Failed to load dashboard data', { variant: 'error' });
       console.error('Dashboard data error:', error);
@@ -84,20 +91,20 @@ const Dashboard = () => {
     loadDashboardData();
   };
 
-  // Mock chart data - in real app, this would come from API
+  // Generate chart data from API metrics
   const ticketTrendData = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: metrics?.trendData?.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
         label: 'New Tickets',
-        data: [12, 19, 15, 25, 22, 8, 14],
+        data: metrics?.trendData?.created || [12, 19, 15, 25, 22, 8, 14],
         borderColor: theme.palette.primary.main,
         backgroundColor: 'rgba(0, 112, 243, 0.1)',
         tension: 0.4,
       },
       {
         label: 'Resolved Tickets',
-        data: [8, 15, 18, 20, 25, 12, 16],
+        data: metrics?.trendData?.resolved || [8, 15, 18, 20, 25, 12, 16],
         borderColor: theme.palette.success.main,
         backgroundColor: 'rgba(76, 175, 80, 0.1)',
         tension: 0.4,
@@ -109,7 +116,12 @@ const Dashboard = () => {
     labels: ['Open', 'In Progress', 'Resolved', 'Closed'],
     datasets: [
       {
-        data: [23, 45, 67, 21],
+        data: [
+          metrics?.statusDistribution?.open || 23,
+          metrics?.statusDistribution?.in_progress || 45,
+          metrics?.statusDistribution?.resolved || 67,
+          metrics?.statusDistribution?.closed || 21
+        ],
         backgroundColor: [
           theme.palette.info.main,
           theme.palette.warning.main,
@@ -121,17 +133,18 @@ const Dashboard = () => {
   };
 
   const categoryData = {
-    labels: ['Software', 'Hardware', 'Network', 'Email', 'Security'],
+    labels: Object.keys(metrics?.categoryDistribution || {}),
     datasets: [
       {
         label: 'Tickets by Category',
-        data: [34, 28, 19, 15, 12],
+        data: Object.values(metrics?.categoryDistribution || {}),
         backgroundColor: [
           theme.palette.primary.main,
           theme.palette.secondary.main,
           theme.palette.success.main,
           theme.palette.warning.main,
           theme.palette.error.main,
+          theme.palette.info.main,
         ],
       },
     ],

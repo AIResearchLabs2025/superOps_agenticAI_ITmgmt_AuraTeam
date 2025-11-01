@@ -47,14 +47,19 @@ const KnowledgeBase = () => {
       setLoading(true);
       const response = await apiWithFallback.getArticles();
       const articleData = response.articles || response;
-      setArticles(articleData);
-      setFilteredArticles(articleData);
-      if (articleData.length > 0 && !selectedArticle) {
-        setSelectedArticle(articleData[0]);
+      // Ensure articleData is an array
+      const articlesArray = Array.isArray(articleData) ? articleData : [];
+      setArticles(articlesArray);
+      setFilteredArticles(articlesArray);
+      if (articlesArray.length > 0 && !selectedArticle) {
+        setSelectedArticle(articlesArray[0]);
       }
     } catch (error) {
       enqueueSnackbar('Failed to load knowledge base articles', { variant: 'error' });
       console.error('Load articles error:', error);
+      // Set empty arrays on error
+      setArticles([]);
+      setFilteredArticles([]);
     } finally {
       setLoading(false);
     }
@@ -71,9 +76,9 @@ const KnowledgeBase = () => {
     // Search filter
     if (searchTerm) {
       filtered = filtered.filter(article =>
-        article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+        article.title && article.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        article.content && article.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (Array.isArray(article.tags) && article.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase())))
       );
     }
 
@@ -86,7 +91,11 @@ const KnowledgeBase = () => {
   }, [articles, searchTerm, selectedCategory]);
 
   // Get unique categories
-  const categories = ['all', ...new Set(articles.map(article => article.category))];
+  const categories = ['all', ...new Set(
+    Array.isArray(articles) && articles.length > 0 
+      ? articles.map(article => article.category).filter(Boolean)
+      : []
+  )];
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -212,7 +221,7 @@ const KnowledgeBase = () => {
                               </Typography>
                             </Box>
                             <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
-                              {article.tags.slice(0, 3).map((tag) => (
+                              {Array.isArray(article.tags) && article.tags.slice(0, 3).map((tag) => (
                                 <Chip
                                   key={tag}
                                   label={tag}
@@ -221,7 +230,7 @@ const KnowledgeBase = () => {
                                   sx={{ fontSize: '0.7rem', height: 20 }}
                                 />
                               ))}
-                              {article.tags.length > 3 && (
+                              {Array.isArray(article.tags) && article.tags.length > 3 && (
                                 <Typography variant="caption" color="text.secondary">
                                   +{article.tags.length - 3} more
                                 </Typography>
@@ -290,7 +299,7 @@ const KnowledgeBase = () => {
                   </Grid>
 
                   <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                    {selectedArticle.tags.map((tag) => (
+                    {Array.isArray(selectedArticle.tags) && selectedArticle.tags.map((tag) => (
                       <Chip
                         key={tag}
                         label={tag}

@@ -10,8 +10,8 @@
     {
       "name": "databases",
       "image": "753353727891.dkr.ecr.us-east-2.amazonaws.com/aura-databases:latest",
-      "cpu": 256,
-      "memory": 512,
+      "cpu": 512,
+      "memory": 1024,
       "essential": true,
       "portMappings": [
         {
@@ -211,55 +211,6 @@
         "timeout": 15,
         "retries": 3,
         "startPeriod": 90
-      }
-    },
-    {
-      "name": "frontend",
-      "image": "753353727891.dkr.ecr.us-east-2.amazonaws.com/aura-frontend:latest",
-      "cpu": 256,
-      "memory": 512,
-      "essential": false,
-      "portMappings": [
-        {
-          "containerPort": 80,
-          "protocol": "tcp",
-          "name": "frontend"
-        }
-      ],
-      "environment": [
-        {
-          "name": "REACT_APP_API_BASE_URL",
-          "value": "http://13.59.129.160:8000"
-        },
-        {
-          "name": "NODE_ENV",
-          "value": "production"
-        }
-      ],
-      "dependsOn": [
-        {
-          "containerName": "api-gateway",
-          "condition": "HEALTHY"
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "/ecs/aura-app-dev",
-          "awslogs-region": "us-east-2",
-          "awslogs-stream-prefix": "frontend",
-          "awslogs-create-group": "true"
-        }
-      },
-      "healthCheck": {
-        "command": [
-          "CMD-SHELL",
-          "curl -f http://127.0.0.1:80/ || exit 1"
-        ],
-        "interval": 30,
-        "timeout": 10,
-        "retries": 3,
-        "startPeriod": 60
       }
     }
   ]

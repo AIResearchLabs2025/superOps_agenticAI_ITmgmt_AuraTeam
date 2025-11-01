@@ -94,6 +94,12 @@ const Sidebar = ({ open, collapsed, isMobile, onClose, currentPath }) => {
           path: '/knowledge-base',
           badge: null,
         },
+        {
+          title: 'AI Suggestions',
+          icon: <BotIcon />,
+          path: '/knowledge-base/suggestions',
+          badge: 3,
+        },
       ],
     },
     {

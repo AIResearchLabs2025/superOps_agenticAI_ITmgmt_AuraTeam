@@ -122,6 +122,48 @@ graph TB
 - **Auto-Suggestions**: Generate article recommendations for agents
 - **Content Generation**: AI-assisted KB article creation
 
+#### 2.1.3 AI-Generated Knowledge Base Suggestions
+**Purpose**: Proactively identify knowledge gaps and generate draft articles using AI analysis of ticket patterns.
+
+**Core Functions**:
+- **Ticket Pattern Analysis**: Analyze historical ticket data to identify recurring issues
+- **Knowledge Gap Detection**: Identify areas where KB articles are missing or insufficient
+- **Automated Article Generation**: Use OpenAI GPT to generate comprehensive article drafts
+- **Suggestion Prioritization**: Rank suggestions based on impact and frequency
+- **Quality Assessment**: Evaluate generated content for accuracy and completeness
+- **Approval Workflow**: Enable Knowledge Managers to review, edit, and publish suggestions
+
+**Technical Specifications**:
+- **Input**: Historical ticket data, existing KB articles, resolution patterns
+- **Processing**: NLP-based clustering, similarity analysis, content generation
+- **Output**: Prioritized list of article suggestions with draft content
+- **Performance**: Generate suggestions within 5 minutes, 85%+ relevance accuracy
+#### 2.1.3 AI-Generated Knowledge Base Suggestions
+**Purpose**: Proactively identify knowledge gaps and generate draft articles using AI analysis of ticket patterns.
+
+**Core Functions**:
+- **Ticket Pattern Analysis**: Analyze historical ticket data to identify recurring issues
+- **Knowledge Gap Detection**: Identify areas where KB articles are missing or insufficient
+- **Automated Article Generation**: Use OpenAI GPT to generate comprehensive article drafts
+- **Suggestion Prioritization**: Rank suggestions based on impact and frequency
+- **Quality Assessment**: Evaluate generated content for accuracy and completeness
+- **Approval Workflow**: Enable Knowledge Managers to review, edit, and publish suggestions
+
+**Technical Specifications**:
+- **Input**: Historical ticket data, existing KB articles, resolution patterns
+- **Processing**: NLP-based clustering, similarity analysis, content generation
+- **Output**: Prioritized list of article suggestions with draft content
+- **Performance**: Generate suggestions within 5 minutes, 85%+ relevance accuracy
+
+#### 2.1.4 Chatbot Self-Service
+**Purpose**: Enable users to resolve common issues through conversational AI.
+
+**Core Functions**:
+- **Intent Recognition**: Understand user queries using NLU
+- **Solution Matching**: Find relevant solutions from KB
+- **Escalation Logic**: Seamlessly transfer to human agents when needed
+- **Learning Loop**: Improve responses based on user feedback
+
 #### 2.1.3 Chatbot Self-Service
 **Purpose**: Enable users to resolve common issues through conversational AI.
 
@@ -230,6 +272,36 @@ POST /api/v1/kb/articles
 
 # Get Article Recommendations
 GET /api/v1/kb/recommendations?ticket_id={ticket_id}
+
+# Get AI-Generated KB Suggestions
+GET /api/v1/kb/suggestions
+Response: {
+    "suggestions": [
+        {
+            "id": "string",
+            "title": "string",
+            "content": "string",
+            "category": "string",
+            "tags": ["string"],
+            "confidence_score": "float",
+            "impact_score": "float",
+            "ticket_cluster": {
+                "count": "integer",
+                "sample_tickets": ["ticket_ids"]
+            },
+            "status": "pending|approved|rejected",
+            "created_at": "datetime"
+        }
+    ]
+}
+
+# Approve/Reject KB Suggestion
+POST /api/v1/kb/suggestions/{suggestion_id}/action
+{
+    "action": "approve|reject|edit",
+    "feedback": "string",
+    "edited_content": "string"
+}
 ```
 
 ### 3.2 Infrastructure & Talent APIs

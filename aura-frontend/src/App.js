@@ -10,6 +10,7 @@ import TicketList from './pages/ServiceDesk/TicketList';
 import TicketDetail from './pages/ServiceDesk/TicketDetail';
 import CreateTicket from './pages/ServiceDesk/CreateTicket';
 import KnowledgeBase from './pages/KnowledgeBase/KnowledgeBase';
+import KBSuggestions from './pages/KnowledgeBase/KBSuggestions';
 import Chatbot from './pages/Chatbot/Chatbot';
 import './App.css';
 
@@ -39,6 +40,7 @@ function App() {
               
               {/* Knowledge Base Routes */}
               <Route path="/knowledge-base" element={<KnowledgeBase />} />
+              <Route path="/knowledge-base/suggestions" element={<KBSuggestions />} />
               <Route path="/knowledge-base/article/:articleId" element={<KnowledgeBase />} />
               
               {/* Chatbot Route */}

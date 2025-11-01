@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -25,6 +25,10 @@ import {
   Container,
   useTheme,
   useMediaQuery,
+  Tooltip,
+  Badge,
+  Fade,
+  LinearProgress,
 } from '@mui/material';
 import {
   Send as SendIcon,
@@ -35,6 +39,10 @@ import {
   Description as DescriptionIcon,
   Person as PersonIcon,
   Info as InfoIcon,
+  AutoAwesome as AIIcon,
+  Psychology as BrainIcon,
+  TrendingUp as ConfidenceIcon,
+  Lightbulb as SuggestionIcon,
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useSnackbar } from 'notistack';
@@ -63,6 +71,15 @@ const CreateTicket = () => {
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [activeStep, setActiveStep] = useState(0);
+
+  // AI-powered features state
+  const [aiSuggestions, setAiSuggestions] = useState([]);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [showAiSuggestions, setShowAiSuggestions] = useState(false);
+  const [aiAnalysis, setAiAnalysis] = useState(null);
+  const [suggestedCategory, setSuggestedCategory] = useState('');
+  const [suggestedPriority, setSuggestedPriority] = useState('');
+  const [confidenceScore, setConfidenceScore] = useState(0);
 
   // Steps for the form
   const steps = [
@@ -271,6 +288,171 @@ const CreateTicket = () => {
     );
   };
 
+  // AI-powered functions
+  const getAiSuggestions = useCallback(async (title, description) => {
+    if (!title.trim() && !description.trim()) {
+      setAiSuggestions([]);
+      setShowAiSuggestions(false);
+      return;
+    }
+
+    if (title.length < 3 && description.length < 10) {
+      return; // Wait for more input
+    }
+
+    setAiLoading(true);
+    
+    try {
+      // Simulate MCP agent call for real-time suggestions
+      // In a real implementation, this would call the MCP categorization agent
+      const mockSuggestions = await simulateAiSuggestions(title, description);
+      
+      setAiSuggestions(mockSuggestions);
+      setShowAiSuggestions(mockSuggestions.length > 0);
+      
+      // Auto-suggest category if confidence is high
+      if (mockSuggestions.length > 0 && mockSuggestions[0].confidence > 0.8) {
+        setSuggestedCategory(mockSuggestions[0].category);
+        setConfidenceScore(mockSuggestions[0].confidence);
+      }
+      
+    } catch (error) {
+      console.error('Error getting AI suggestions:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  }, []);
+
+  // Simulate AI suggestions (replace with actual MCP agent calls)
+  const simulateAiSuggestions = async (title, description) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500));
+    
+    const text = `${title} ${description}`.toLowerCase();
+    const suggestions = [];
+    
+    // Simple keyword-based suggestions (mimicking the MCP agent logic)
+    const categoryKeywords = {
+      'Email Issues': ['email', 'outlook', 'mail', 'inbox', 'send', 'receive'],
+      'Network Issues': ['network', 'internet', 'wifi', 'connection', 'vpn'],
+      'Hardware Issues': ['computer', 'laptop', 'printer', 'monitor', 'keyboard'],
+      'Software Issues': ['software', 'application', 'app', 'program', 'windows'],
+      'Access Request': ['password', 'login', 'access', 'account', 'locked'],
+      'Security Issues': ['security', 'virus', 'malware', 'suspicious', 'phishing']
+    };
+
+    Object.entries(categoryKeywords).forEach(([category, keywords]) => {
+      let score = 0;
+      let matchedKeywords = [];
+      
+      keywords.forEach(keyword => {
+        if (text.includes(keyword)) {
+          score += keyword.length > 4 ? 2 : 1;
+          matchedKeywords.push(keyword);
+        }
+      });
+      
+      if (score > 0) {
+        suggestions.push({
+          category,
+          confidence: Math.min(score * 0.2, 0.95),
+          reason: `Matches keywords: ${matchedKeywords.join(', ')}`,
+          matchedKeywords
+        });
+      }
+    });
+
+    // Sort by confidence and return top 3
+    return suggestions
+      .sort((a, b) => b.confidence - a.confidence)
+      .slice(0, 3);
+  };
+
+  // Debounced AI suggestions
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (formData.title || formData.description) {
+        getAiSuggestions(formData.title, formData.description);
+      }
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timeoutId);
+  }, [formData.title, formData.description, getAiSuggestions]);
+
+  // Apply AI suggestion
+  const applyAiSuggestion = (suggestion) => {
+    handleInputChange('category', suggestion.category);
+    setSuggestedCategory('');
+    setShowAiSuggestions(false);
+    enqueueSnackbar(`Applied AI suggestion: ${suggestion.category}`, { variant: 'success' });
+  };
+
+  // Get comprehensive AI analysis
+  const getAiAnalysis = async () => {
+    if (!formData.title.trim() || !formData.description.trim()) {
+      return;
+    }
+
+    setAiLoading(true);
+    
+    try {
+      // Simulate comprehensive AI analysis
+      const analysis = await simulateComprehensiveAnalysis();
+      setAiAnalysis(analysis);
+      
+      // Auto-suggest priority based on analysis
+      if (analysis.suggestedPriority && analysis.confidence > 0.7) {
+        setSuggestedPriority(analysis.suggestedPriority);
+      }
+      
+    } catch (error) {
+      console.error('Error getting AI analysis:', error);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
+  // Simulate comprehensive AI analysis
+  const simulateComprehensiveAnalysis = async () => {
+    await new Promise(resolve => setTimeout(resolve, 800));
+    
+    const text = `${formData.title} ${formData.description}`.toLowerCase();
+    
+    // Analyze urgency indicators
+    const urgencyKeywords = ['urgent', 'asap', 'critical', 'emergency', 'down', 'offline'];
+    const hasUrgency = urgencyKeywords.some(keyword => text.includes(keyword));
+    
+    // Analyze impact indicators
+    const impactKeywords = ['everyone', 'team', 'multiple users', 'can\'t work', 'blocking'];
+    const hasHighImpact = impactKeywords.some(keyword => text.includes(keyword));
+    
+    let suggestedPriority = 'medium';
+    if (hasUrgency && hasHighImpact) {
+      suggestedPriority = 'critical';
+    } else if (hasUrgency || hasHighImpact) {
+      suggestedPriority = 'high';
+    } else if (text.includes('slow') || text.includes('issue')) {
+      suggestedPriority = 'medium';
+    } else {
+      suggestedPriority = 'low';
+    }
+
+    return {
+      suggestedPriority,
+      confidence: 0.85,
+      urgencyIndicators: urgencyKeywords.filter(keyword => text.includes(keyword)),
+      impactIndicators: impactKeywords.filter(keyword => text.includes(keyword)),
+      estimatedResolutionTime: suggestedPriority === 'critical' ? '1-2 hours' : 
+                               suggestedPriority === 'high' ? '4-6 hours' : 
+                               suggestedPriority === 'medium' ? '1-2 days' : '2-3 days',
+      recommendedActions: [
+        'Gather additional system information',
+        'Check for similar recent issues',
+        'Prepare troubleshooting steps'
+      ]
+    };
+  };
+
   // Helper function to render step content
   const renderStepContent = (step) => {
     switch (step) {
@@ -332,6 +514,102 @@ const CreateTicket = () => {
               </Box>
             </Grid>
 
+            {/* AI Suggestions Panel */}
+            {(showAiSuggestions || aiLoading) && (
+              <Grid item xs={12}>
+                <Fade in={showAiSuggestions || aiLoading}>
+                  <Paper 
+                    variant="outlined" 
+                    sx={{ 
+                      p: 3, 
+                      backgroundColor: 'primary.50',
+                      border: '2px solid',
+                      borderColor: 'primary.200',
+                      borderRadius: 2
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
+                      <AIIcon sx={{ mr: 2, color: 'primary.main' }} />
+                      <Typography variant="h6" sx={{ color: 'primary.main', flexGrow: 1 }}>
+                        AI Suggestions
+                      </Typography>
+                      {aiLoading && <CircularProgress size={20} />}
+                    </Box>
+                    
+                    {aiLoading ? (
+                      <Box sx={{ display: 'flex', alignItems: 'center', py: 2 }}>
+                        <LinearProgress sx={{ flexGrow: 1, mr: 2 }} />
+                        <Typography variant="body2" color="text.secondary">
+                          Analyzing your issue...
+                        </Typography>
+                      </Box>
+                    ) : (
+                      <>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          Based on your description, here are our AI-powered category suggestions:
+                        </Typography>
+                        
+                        <Stack spacing={2}>
+                          {aiSuggestions.map((suggestion, index) => (
+                            <Paper 
+                              key={index}
+                              variant="outlined" 
+                              sx={{ 
+                                p: 2, 
+                                cursor: 'pointer',
+                                transition: 'all 0.2s',
+                                '&:hover': {
+                                  backgroundColor: 'primary.50',
+                                  borderColor: 'primary.main'
+                                }
+                              }}
+                              onClick={() => applyAiSuggestion(suggestion)}
+                            >
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <Box sx={{ flexGrow: 1 }}>
+                                  <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                    {suggestion.category}
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                                    {suggestion.reason}
+                                  </Typography>
+                                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                    <ConfidenceIcon sx={{ fontSize: 16, color: 'success.main' }} />
+                                    <Typography variant="caption" color="success.main">
+                                      {Math.round(suggestion.confidence * 100)}% confidence
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                                <Button
+                                  variant="outlined"
+                                  size="small"
+                                  startIcon={<SuggestionIcon />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    applyAiSuggestion(suggestion);
+                                  }}
+                                >
+                                  Apply
+                                </Button>
+                              </Box>
+                            </Paper>
+                          ))}
+                        </Stack>
+                        
+                        {aiSuggestions.length === 0 && (
+                          <Alert severity="info" sx={{ mt: 2 }}>
+                            <Typography variant="body2">
+                              No specific suggestions yet. Try adding more details to get better AI recommendations.
+                            </Typography>
+                          </Alert>
+                        )}
+                      </>
+                    )}
+                  </Paper>
+                </Fade>
+              </Grid>
+            )}
+
             {/* Category and Priority */}
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.category} required>
@@ -348,6 +626,26 @@ const CreateTicket = () => {
                   ))}
                 </Select>
                 {errors.category && <FormHelperText>{errors.category}</FormHelperText>}
+                
+                {/* Show AI suggestion badge if available */}
+                {suggestedCategory && suggestedCategory !== formData.category && (
+                  <FormHelperText sx={{ color: 'primary.main' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mt: 1 }}>
+                      <BrainIcon sx={{ fontSize: 16 }} />
+                      <Typography variant="caption">
+                        AI suggests: {suggestedCategory} ({Math.round(confidenceScore * 100)}% confidence)
+                      </Typography>
+                      <Button
+                        size="small"
+                        variant="text"
+                        onClick={() => applyAiSuggestion({ category: suggestedCategory })}
+                        sx={{ ml: 1, minWidth: 'auto', p: 0.5 }}
+                      >
+                        Apply
+                      </Button>
+                    </Box>
+                  </FormHelperText>
+                )}
               </FormControl>
             </Grid>
 

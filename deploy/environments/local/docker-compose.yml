@@ -3,11 +3,36 @@
 version: '3.8'
 
 services:
+  # Frontend React Application
+  frontend:
+    build:
+      context: ../../../aura-frontend
+      dockerfile: Dockerfile
+      platforms:
+        - linux/amd64
+    ports:
+      - "3000:80"
+    environment:
+      - REACT_APP_API_URL=http://localhost:8000
+      - REACT_APP_ENVIRONMENT=local
+    depends_on:
+      - api-gateway
+    networks:
+      - aura-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
   # API Gateway
   api-gateway:
     build:
       context: ../../../aura-backend
       dockerfile: api-gateway/Dockerfile
+      platforms:
+        - linux/amd64
     ports:
       - "8000:8000"
     environment:
@@ -17,6 +42,7 @@ services:
       - REDIS_URL=redis://redis:6379
       - ENVIRONMENT=local
       - DEBUG=true
+      - CORS_ORIGINS=http://localhost:3000,http://frontend:80
     depends_on:
       - redis
       - service-desk-host
@@ -26,12 +52,20 @@ services:
       - ../../../aura-backend/api-gateway:/app
       - ../../../aura-backend/shared:/app/shared
       - /app/__pycache__
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # Service Desk Microservice
   service-desk-host:
     build:
       context: ../../../aura-backend
       dockerfile: service-desk-host/Dockerfile
+      platforms:
+        - linux/amd64
     ports:
       - "8001:8001"
     environment:
@@ -39,9 +73,11 @@ services:
       - MONGODB_URL=mongodb://mongo:27017/aura_servicedesk
       - REDIS_URL=redis://redis:6379
       - RABBITMQ_URL=amqp://guest:guest@rabbitmq:5672/
-      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-your_openai_api_key_here}
       - ENVIRONMENT=local
       - DEBUG=true
+      - AI_CATEGORIZATION_ENABLED=true
+      - MCP_ORCHESTRATOR_URL=http://localhost:8080
     depends_on:
       - postgres
       - mongo
@@ -53,10 +89,17 @@ services:
       - ../../../aura-backend/service-desk-host:/app
       - ../../../aura-backend/shared:/app/shared
       - /app/__pycache__
+    healthcheck:
+      test: ["CMD", "python", "-c", "import requests; requests.get('http://localhost:8001/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
 
   # PostgreSQL Database
   postgres:
     image: postgres:15-alpine
+    platform: linux/amd64
     environment:
       - POSTGRES_USER=aura_user
       - POSTGRES_PASSWORD=aura_password
@@ -68,40 +111,71 @@ services:
       - ../../../aura-backend/shared/database/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
     networks:
       - aura-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aura_user -d aura_servicedesk"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # MongoDB Database
   mongo:
     image: mongo:7.0
+    platform: linux/amd64
     ports:
       - "27017:27017"
     volumes:
       - mongo_data:/data/db
     networks:
       - aura-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
 
   # Redis Cache
   redis:
     image: redis:7-alpine
+    platform: linux/amd64
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     networks:
       - aura-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
   # RabbitMQ Message Queue
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    platform: linux/amd64
+    hostname: rabbitmq
     ports:
       - "5672:5672"
       - "15672:15672"
     environment:
       - RABBITMQ_DEFAULT_USER=guest
       - RABBITMQ_DEFAULT_PASS=guest
+      - RABBITMQ_ERLANG_COOKIE=SWQOKODSQALRPCLNMEQGABCDEFGHIJKLMNOP
+      - RABBITMQ_NODE_TYPE=stats
+      - RABBITMQ_NODENAME=rabbit@rabbitmq
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - aura-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
 
 volumes:
   postgres_data:

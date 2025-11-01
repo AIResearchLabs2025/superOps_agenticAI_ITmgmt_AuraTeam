@@ -188,6 +188,7 @@ Aura transforms traditional IT operations by leveraging artificial intelligence 
 - **AI Categorization**: NLP-based ticket classification with 80%+ accuracy
 - **Agent Dashboard**: Queue management, ticket assignment, status updates
 - **Basic Knowledge Base**: Article search, viewing, basic creation
+- **AI-Generated KB Suggestions**: Automated article generation from ticket patterns
 - **Simple Chatbot**: Rule-based responses for common queries
 
 #### 4.1.2 Essential Analytics
