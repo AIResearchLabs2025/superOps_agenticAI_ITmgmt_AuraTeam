@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura Process Flow Diagrams</title>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #1976d2;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        h2 {
+            color: #424242;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+            margin-top: 40px;
+        }
+        h3 {
+            color: #666;
+            margin-top: 30px;
+        }
+        .diagram {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            background: #fafafa;
+        }
+        .mermaid {
+            text-align: center;
+        }
+        .note {
+            background: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .toc {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            margin-bottom: 30px;
+        }
+        .toc ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+        .toc li {
+            margin: 5px 0;
+        }
+        .toc a {
+            color: #1976d2;
+            text-decoration: none;
+        }
+        .toc a:hover {
+            text-decoration: underline;
+        }
+        .overview-section {
+            display: grid;
+            grid-template-columns: 25% 75%;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .toc-column {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .conclusion-column {
+            background: #e8f5e8;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .toc-column ul {
+            list-style-type: none;
+            padding-left: 0;
+            margin: 0;
+        }
+        .toc-column li {
+            margin: 8px 0;
+            padding: 5px 0;
+        }
+        .toc-column a {
+            color: #1976d2;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .toc-column a:hover {
+            text-decoration: underline;
+            color: #0d47a1;
+        }
+        .capability-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        .capability-item {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #4caf50;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .capability-item strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #2e7d32;
+            font-size: 14px;
+        }
+        .capability-item p {
+            margin: 0;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        @media (max-width: 768px) {
+            .overview-section {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Aura AI-Powered IT Management Suite<br/>Process Flow Diagrams</h1>
+        
+        <div class="note">
+            <strong>Note:</strong> This HTML file renders all the Mermaid diagrams from the Process_Flow_Diagrams.md file. 
+            Simply open this file in any modern web browser to view all diagrams interactively.
+        </div>
+
+        <div class="overview-section">
+            <div class="toc-column">
+                <h3>📋 Table of Contents</h3>
+                <ul>
+                    <li><a href="#architecture">1. System Architecture Overview</a></li>
+                    <li><a href="#ticket-management">2. Ticket Management Process Flow</a></li>
+                    <li><a href="#knowledge-base">3. Knowledge Base Management</a></li>
+                    <li><a href="#dashboard">4. Dashboard Analytics</a></li>
+                    <li><a href="#chatbot">5. Chatbot Interaction</a></li>
+                    <li><a href="#agent-performance">6. Agent Performance Analytics</a></li>
+                    <li><a href="#system-health">7. System Health and Monitoring</a></li>
+                    <li><a href="#error-handling">8. Error Handling and Fallback Flows</a></li>
+                    <li><a href="#frontend">9. Frontend Navigation</a></li>
+                    <li><a href="#data-flow">10. Data Flow Summary</a></li>
+                </ul>
+            </div>
+            
+            <div class="conclusion-column">
+                <h3>🎯 Architecture Capabilities</h3>
+                <div class="capability-grid">
+                    <div class="capability-item">
+                        <strong>🤖 Agentic AI Architecture</strong>
+                        <p>Multi-agent system with specialized AI agents for ticket categorization, knowledge management, and intelligent routing</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>🔗 MCP Protocol Integration</strong>
+                        <p>Model Context Protocol enables seamless communication between AI agents and external services for enhanced automation</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>🏗️ Microservices Architecture</strong>
+                        <p>Clean separation between API Gateway and Service Desk Host with horizontal scaling capabilities</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>🧠 AI-First Integration</strong>
+                        <p>OpenAI-powered ticket categorization, analysis, and chatbot functionality with 95% accuracy target</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>🛡️ Robust Error Handling</strong>
+                        <p>Graceful fallbacks when databases or AI services are unavailable, ensuring continuous operation</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>⚡ Scalable Design</strong>
+                        <p>Redis caching, load balancing, and horizontal scaling capabilities for enterprise deployment</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>👥 User-Centric Features</strong>
+                        <p>Intuitive ticket management, knowledge base, and self-service options with mobile-responsive design</p>
+                    </div>
+                    <div class="capability-item">
+                        <strong>🔄 Event-Driven Architecture</strong>
+                        <p>Asynchronous processing with message queues for real-time updates and notifications</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h2 id="architecture">1. System Architecture Overview</h2>
+        <div class="diagram">
+            <div class="mermaid">
+graph TB
+    subgraph "Frontend Layer"
+        UI[React Frontend<br/>Material-UI Components]
+        ROUTES[React Router<br/>Navigation]
+    end
+    
+    subgraph "API Gateway Layer"
+        GATEWAY[FastAPI Gateway<br/>Port 8000]
+        PROXY[Request Proxy<br/>Load Balancing]
+    end
+    
+    subgraph "Microservices Layer"
+        SD[Service Desk Host<br/>Port 8001]
+        AI[AI Service<br/>OpenAI Integration]
+    end
+    
+    subgraph "Data Layer"
+        MONGO[(MongoDB<br/>Tickets & KB)]
+        REDIS[(Redis<br/>Caching)]
+        POSTGRES[(PostgreSQL<br/>Future Use)]
+    end
+    
+    UI --> GATEWAY
+    GATEWAY --> PROXY
+    PROXY --> SD
+    SD --> AI
+    SD --> MONGO
+    SD --> REDIS
+    
+    style UI fill:#e1f5fe
+    style GATEWAY fill:#f3e5f5
+    style SD fill:#e8f5e8
+    style MONGO fill:#fff3e0
+            </div>
+        </div>
+
+        <h2 id="ticket-management">2. Ticket Management Process Flow</h2>
+        
+        <h3>2.1 Ticket Creation Process</h3>
+        <div class="diagram">
+            <div class="mermaid">
+sequenceDiagram
+    participant User as End User
+    participant UI as React Frontend
+    participant Gateway as API Gateway
+    participant SD as Service Desk
+    participant AI as AI Service
+    participant DB as MongoDB
+    participant Cache as Redis
+
+    User->>UI: Fill ticket form
+    UI->>UI: Validate form data
+    UI->>Gateway: POST /api/v1/tickets
+    Gateway->>SD: Forward request
+    
+    SD->>AI: Auto-categorize ticket
+    AI-->>SD: Category + confidence
+    
+    SD->>AI: Generate KB suggestions
+    AI-->>SD: Relevant articles
+    
+    SD->>DB: Save ticket document
+    DB-->>SD: Return ticket ID
+    
+    SD->>Cache: Cache ticket data
+    Cache-->>SD: Confirmation
+    
+    SD-->>Gateway: Success response
+    Gateway-->>UI: Ticket created
+    UI-->>User: Show confirmation + suggestions
+    
+    Note over SD,AI: AI categorization with 95% accuracy target
+    Note over SD,DB: Auto-populate 50+ tickets on startup
+            </div>
+        </div>
+
+        <h3>2.2 AI Ticket Analysis Process</h3>
+        <div class="diagram">
+            <div class="mermaid">
+flowchart TD
+    A[Request ticket analysis] --> B[Get ticket by ID]
+    B --> C{Ticket exists?}
+    C -->|No| D[Return 404 error]
+    C -->|Yes| E[Load historical tickets]
+    
+    E --> F[Find similar tickets by category]
+    F --> G[Calculate similarity scores]
+    G --> H[Get available agents]
+    
+    H --> I[Match agent skills to ticket category]
+    I --> J[Generate AI analysis prompt]
+    J --> K[Call OpenAI API]
+    
+    K --> L{AI call successful?}
+    L -->|No| M[Generate fallback analysis]
+    L -->|Yes| N[Parse AI response]
+    
+    N --> O[Determine best agent assignment]
+    O --> P[Generate self-fix suggestions]
+    P --> Q[Estimate resolution time]
+    Q --> R[Create priority recommendation]
+    
+    M --> S[Return analysis results]
+    R --> S
+    
+    style A fill:#e3f2fd
+    style L fill:#fff3e0
+    style S fill:#e8f5e8
+            </div>
+        </div>
+
+        <h2 id="knowledge-base">3. Knowledge Base Management</h2>
+        
+        <h3>3.1 Knowledge Base Search Process</h3>
+        <div class="diagram">
+            <div class="mermaid">
+sequenceDiagram
+    participant User as User
+    participant UI as Frontend
+    participant Gateway as Gateway
+    participant SD as Service Desk
+    participant AI as AI Service
+    participant KB as MongoDB KB
+
+    User->>UI: Enter search query
+    UI->>Gateway: POST /api/v1/kb/search
+    Gateway->>SD: Forward search request
+    
+    SD->>KB: Get all articles (limit 100)
+    KB-->>SD: Return articles
+    
+    SD->>AI: Generate search prompt
+    AI-->>SD: AI-powered relevance analysis
+    
+    SD->>SD: Calculate relevance scores
+    Note over SD: Score based on title/content matching
+    
+    SD->>SD: Sort by relevance
+    SD-->>Gateway: Return top 5 results
+    Gateway-->>UI: Search results + AI suggestions
+    UI-->>User: Display results
+    
+    Note over AI: Fallback to simple text search if AI fails
+            </div>
+        </div>
+
+        <h2 id="dashboard">4. Dashboard Analytics Process Flow</h2>
+        
+        <h3>4.1 Dashboard Overview Generation</h3>
+        <div class="diagram">
+            <div class="mermaid">
+flowchart TD
+    A["Request dashboard overview"] --> B{"MongoDB available?"}
+    B -->|No| C["Return mock data"]
+    B -->|Yes| D["Query ticket statistics"]
+    
+    D --> E["Count total tickets"]
+    E --> F["Count by status"]
+    F --> G["Count resolved today"]
+    G --> H["Calculate avg resolution time"]
+    H --> I["Calculate agent workload"]
+    
+    I --> J["Calculate system uptime"]
+    J --> K["Format dashboard data"]
+    K --> L["Cache results (5 min TTL)"]
+    L --> M["Return dashboard overview"]
+    
+    C --> M
+    
+    style A fill:#e3f2fd
+    style B fill:#fff3e0
+    style M fill:#e8f5e8
+            </div>
+        </div>
+
+        <h3>4.2 Ticket Metrics Generation</h3>
+        <div class="diagram">
+            <div class="mermaid">
+sequenceDiagram
+    participant UI as Frontend
+    participant Gateway as Gateway
+    participant SD as Service Desk
+    participant DB as MongoDB
+    participant Cache as Redis
+
+    UI->>Gateway: GET /api/v1/dashboard/ticket-metrics
+    Gateway->>SD: Forward request
+    
+    SD->>DB: Query all tickets (limit 1000)
+    DB-->>SD: Return ticket data
+    
+    SD->>SD: Calculate status distribution
+    SD->>SD: Calculate category distribution
+    SD->>SD: Calculate priority distribution
+    SD->>SD: Generate 7-day trend data
+    
+    SD->>Cache: Cache metrics (5 min TTL)
+    Cache-->>SD: Confirmation
+    
+    SD-->>Gateway: Return metrics data
+    Gateway-->>UI: Chart-ready data
+    
+    Note over SD: Processes created/resolved counts per day
+    Note over Cache: TTL prevents excessive calculations
+            </div>
+        </div>
+
+        <h2 id="chatbot">5. Chatbot Interaction Process Flow</h2>
+        
+        <h3>5.1 Chatbot Message Processing</h3>
+        <div class="diagram">
+            <div class="mermaid">
+flowchart TD
+    A[User sends message] --> B[Extract user intent via AI]
+    B --> C[Search relevant KB articles]
+    C --> D[Prepare AI context]
+    
+    D --> E[Generate AI response prompt]
+    E --> F[Call OpenAI API]
+    F --> G{AI call successful?}
+    
+    G -->|No| H[Return fallback response]
+    G -->|Yes| I[Parse AI response]
+    
+    I --> J[Check escalation keywords]
+    J --> K[Generate suggestions from KB]
+    K --> L[Calculate confidence score]
+    
+    L --> M[Format chat response]
+    M --> N[Cache conversation context]
+    N --> O[Return response to user]
+    
+    H --> O
+    
+    style A fill:#e3f2fd
+    style G fill:#fff3e0
+    style O fill:#e8f5e8
+            </div>
+        </div>
+
+        <h2 id="system-health">7. System Health and Monitoring Flow</h2>
+        
+        <h3>7.1 Health Check Process</h3>
+        <div class="diagram">
+            <div class="mermaid">
+sequenceDiagram
+    participant Client as Client
+    participant Gateway as API Gateway
+    participant SD as Service Desk
+    participant DB as Databases
+    participant AI as AI Service
+
+    Client->>Gateway: GET /health
+    Gateway->>SD: Check service health
+    
+    par Check Dependencies
+        SD->>DB: Check MongoDB connection
+        DB-->>SD: Connection status
+    and
+        SD->>DB: Check Redis connection
+        DB-->>SD: Connection status
+    and
+        SD->>AI: Check OpenAI service
+        AI-->>SD: Service status
+    end
+    
+    SD->>SD: Aggregate health status
+    SD-->>Gateway: Service health report
+    Gateway-->>Client: Overall system health
+    
+    Note over SD: Status: healthy/degraded/unhealthy
+            </div>
+        </div>
+
+        <h2 id="data-flow">10. Data Flow Summary</h2>
+        
+        <h3>10.1 Complete Ticket Lifecycle</h3>
+        <div class="diagram">
+            <div class="mermaid">
+stateDiagram-v2
+    [*] --> Created: User submits ticket
+    Created --> Categorized: AI auto-categorization
+    Categorized --> Assigned: Agent assignment
+    Assigned --> InProgress: Agent starts work
+    InProgress --> Resolved: Issue fixed
+    Resolved --> Closed: User confirmation
+    Closed --> [*]
+    
+    Created --> Escalated: High priority
+    Escalated --> Assigned
+    
+    InProgress --> Reassigned: Skill mismatch
+    Reassigned --> Assigned
+    
+    note right of Categorized: AI provides 95% accuracy
+    note right of Assigned: Skill-based routing
+    note right of Resolved: Auto-resolution tracking
+            </div>
+        </div>
+
+        <div class="note">
+            <strong>How to Use:</strong>
+            <ul>
+                <li>All diagrams are interactive and can be zoomed</li>
+                <li>Click and drag to pan around larger diagrams</li>
+                <li>Use browser zoom (Ctrl/Cmd + or -) to adjust size</li>
+                <li>Right-click on any diagram to save as image</li>
+            </ul>
+        </div>
+
+    </div>
+
+    <script>
+        mermaid.initialize({ 
+            startOnLoad: true,
+            theme: 'default',
+            flowchart: {
+                useMaxWidth: true,
+                htmlLabels: true
+            },
+            sequence: {
+                useMaxWidth: true,
+                wrap: true
+            }
+        });
+    </script>
+</body>
+</html>
